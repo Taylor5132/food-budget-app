@@ -26,6 +26,7 @@ Gateway / User / Pantry / Recipe / Price / MealPlan / ML Serving
 1. **GPU 사용 금지** — PyTorch, TensorFlow, CUDA 의존 코드 작성 불가. CPU 전용 ML만.
 2. **비상업 크롤링** — 쿠팡(신선+가공), 만개의레시피, 냉부, 지마켓 타임딜만 허용. 다른 상업 사이트 크롤링 코드 작성 금지.
 3. **학생 예산** — GPU 인스턴스, 유료 SaaS API (OpenAI 등) 호출 코드 금지.
+   - **예외 (2026-07-09 승인):** 유저 온디맨드 **YouTube 영상→레시피 추출**(#0, P1)에 한해 외부 멀티모달 LLM API(**Gemini**) 호출 허용. 온디맨드·유저 트리거·**비용 상한 관리 전제**. 상세 `docs/video-recipe-ai.md`. 그 외 상시 경로에는 유료 API 금지 유지.
 
 ## 코드 컨벤션
 - Python: FastAPI + Pydantic v2, async 우선, SQLAlchemy 2.0 스타일
