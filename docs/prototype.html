@@ -1,0 +1,838 @@
+<title>food-budget-app 프로토타입</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --primary: #E8590C;
+  --primary-light: #FFF4ED;
+  --primary-dark: #C44D09;
+  --primary-hover: rgba(232,89,12,.08);
+  --success: #0CA678;
+  --success-light: #EDFBF6;
+  --danger: #E03131;
+  --danger-light: #FFF0F0;
+  --warning: #F59F00;
+  --warning-light: #FFF9DB;
+  --text-1: #1A1B1E;
+  --text-2: #5C5F66;
+  --text-3: #909296;
+  --bg: #F5F5F4;
+  --card: #FFFFFF;
+  --border: #E7E5E4;
+  --sidebar-bg: #FAFAF9;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: -apple-system, 'Apple SD Gothic Neo', 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+  --sidebar-w: 240px;
+  --header-h: 60px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --text-1:#E4E5E7;--text-2:#A6A7AB;--text-3:#6B6D73;
+  --bg:#0C0A09;--card:#1C1917;--border:#292524;--sidebar-bg:#171412;
+  --shadow:0 1px 3px rgba(0,0,0,.3);--shadow-lg:0 4px 16px rgba(0,0,0,.4);
+  --primary-light:#2A1A0F;--success-light:#0D2A1F;--danger-light:#2A0F0F;--warning-light:#2A2410;
+  --primary-hover:rgba(232,89,12,.15);
+}}
+:root[data-theme="dark"]{
+  --text-1:#E4E5E7;--text-2:#A6A7AB;--text-3:#6B6D73;
+  --bg:#0C0A09;--card:#1C1917;--border:#292524;--sidebar-bg:#171412;
+  --shadow:0 1px 3px rgba(0,0,0,.3);--shadow-lg:0 4px 16px rgba(0,0,0,.4);
+  --primary-light:#2A1A0F;--success-light:#0D2A1F;--danger-light:#2A0F0F;--warning-light:#2A2410;
+  --primary-hover:rgba(232,89,12,.15);
+}
+:root[data-theme="light"]{
+  --text-1:#1A1B1E;--text-2:#5C5F66;--text-3:#909296;
+  --bg:#F5F5F4;--card:#FFFFFF;--border:#E7E5E4;--sidebar-bg:#FAFAF9;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-lg:0 4px 16px rgba(0,0,0,.08);
+  --primary-light:#FFF4ED;--success-light:#EDFBF6;--danger-light:#FFF0F0;--warning-light:#FFF9DB;
+  --primary-hover:rgba(232,89,12,.08);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text-1);line-height:1.5}
+
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh}
+.sidebar{
+  width:var(--sidebar-w);background:var(--sidebar-bg);border-right:1px solid var(--border);
+  position:fixed;top:0;left:0;bottom:0;z-index:40;display:flex;flex-direction:column;
+  transition:transform .25s ease;
+}
+.sidebar-logo{
+  height:var(--header-h);display:flex;align-items:center;gap:10px;padding:0 20px;
+  border-bottom:1px solid var(--border);font-size:17px;font-weight:700;color:var(--primary);
+  letter-spacing:-.3px;flex-shrink:0;
+}
+.sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-group-label{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;padding:16px 10px 6px}
+.nav-btn{
+  display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:var(--radius-sm);
+  border:none;background:none;font-family:var(--font);font-size:13.5px;color:var(--text-2);
+  cursor:pointer;transition:all .12s;text-align:left;
+}
+.nav-btn:hover{background:var(--primary-hover);color:var(--text-1)}
+.nav-btn.active{background:var(--primary-light);color:var(--primary);font-weight:600}
+.nav-btn .icon{font-size:17px;width:24px;text-align:center;flex-shrink:0}
+.nav-btn .badge-dot{
+  margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--danger);flex-shrink:0;
+}
+
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-width:0}
+.top-bar{
+  height:var(--header-h);border-bottom:1px solid var(--border);background:var(--card);
+  display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:30;
+}
+.hamburger{display:none;border:none;background:none;font-size:22px;cursor:pointer;color:var(--text-1);padding:4px}
+.top-search{
+  flex:1;max-width:420px;padding:9px 14px 9px 36px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--border);background:var(--bg);font-size:13.5px;font-family:var(--font);
+  color:var(--text-1);outline:none;transition:border .15s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23909296' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:12px center;
+}
+.top-search:focus{border-color:var(--primary)}
+.top-search::placeholder{color:var(--text-3)}
+.top-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.top-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--warning));
+  display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;
+  cursor:pointer;
+}
+.notif-btn{
+  position:relative;border:none;background:none;font-size:20px;cursor:pointer;padding:4px;
+}
+.notif-btn::after{
+  content:'';position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;
+  background:var(--danger);border:2px solid var(--card);
+}
+
+.content{flex:1;padding:28px;overflow-x:hidden}
+.content-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.content-header h1{font-size:22px;font-weight:700;letter-spacing:-.4px}
+.breadcrumb{font-size:12px;color:var(--text-3);margin-bottom:4px}
+
+/* ── COMPONENTS ── */
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card+.card{margin-top:14px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-header h3{font-size:15px;font-weight:700;color:var(--text-1)}
+.card-header .more{font-size:12px;color:var(--primary);cursor:pointer;font-weight:500}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+.stat-card{background:var(--card);border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.stat-card .label{font-size:12px;color:var(--text-3);margin-bottom:6px}
+.stat-card .value{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat-card .change{font-size:11px;margin-top:4px;font-weight:600}
+
+.badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.badge-primary{background:var(--primary-light);color:var(--primary)}
+.badge-success{background:var(--success-light);color:var(--success)}
+.badge-danger{background:var(--danger-light);color:var(--danger)}
+.badge-warning{background:var(--warning-light);color:var(--warning)}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 16px;border-radius:var(--radius-sm);border:none;font-family:var(--font);
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;white-space:nowrap;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-outline{background:transparent;color:var(--primary);border:1.5px solid var(--primary)}
+.btn-sm{padding:6px 10px;font-size:12px}
+
+.alert{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:12px}
+.alert-danger{background:var(--danger-light);color:var(--danger)}
+.alert-success{background:var(--success-light);color:var(--success)}
+.alert-warning{background:var(--warning-light);color:var(--warning)}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);font-weight:600;color:var(--text-2);font-size:12px}
+td{padding:12px;border-bottom:1px solid var(--border);color:var(--text-1)}
+tr:hover td{background:var(--primary-hover)}
+
+.recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.recipe-card{
+  background:var(--card);border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);cursor:pointer;border:1px solid var(--border);transition:transform .15s,box-shadow .15s;
+}
+.recipe-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.recipe-img{width:100%;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;font-size:52px;background:linear-gradient(135deg,var(--primary-light),var(--warning-light))}
+.recipe-info{padding:14px}
+.recipe-info h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.recipe-info .meta{font-size:12px;color:var(--text-3)}
+
+.tab-bar{display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;scrollbar-width:none;flex-wrap:wrap}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--card);color:var(--text-2);transition:all .12s;white-space:nowrap}
+.tab.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+.fridge-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.fridge-item:last-child{border-bottom:none}
+.fridge-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.fridge-detail{flex:1;min-width:0}
+.fridge-detail h4{font-size:14px;font-weight:600}
+.fridge-detail p{font-size:12px;color:var(--text-3);margin-top:2px}
+
+.hotdeal-card{display:flex;gap:14px;padding:14px;background:var(--card);border-radius:var(--radius-sm);border:1px solid var(--border);cursor:pointer;transition:all .12s}
+.hotdeal-card:hover{border-color:var(--primary);box-shadow:var(--shadow)}
+.hotdeal-card+.hotdeal-card{margin-top:10px}
+.hotdeal-img{width:80px;height:80px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:36px;background:var(--warning-light);flex-shrink:0}
+.hotdeal-info{flex:1}
+.hotdeal-info h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.hotdeal-info .price-original{font-size:12px;color:var(--text-3);text-decoration:line-through}
+.hotdeal-info .price-deal{font-size:17px;font-weight:700;color:var(--danger)}
+.hotdeal-info .discount{font-size:14px;font-weight:700;color:var(--danger);margin-right:6px}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal-h{font-size:11px;font-weight:600;color:var(--text-3);padding:8px 0}
+.cal-d{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;color:var(--text-2);border-radius:8px;cursor:pointer;position:relative;max-width:48px;margin:0 auto}
+.cal-d.has::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--primary);position:absolute;bottom:3px}
+.cal-d.today{background:var(--primary);color:#fff}
+.cal-d.today::after{background:#fff}
+.cal-d.empty{visibility:hidden}
+
+.engel-ring{width:140px;height:140px;border-radius:50%;background:conic-gradient(var(--primary) 0deg,var(--primary) 126deg,var(--border) 126deg);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.engel-inner{width:104px;height:104px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.engel-inner .val{font-size:26px;font-weight:700;color:var(--primary)}
+.engel-inner .lab{font-size:11px;color:var(--text-3)}
+
+.nutrition-bar{display:flex;align-items:center;gap:8px;margin:7px 0}
+.nutrition-bar .n-label{font-size:12px;color:var(--text-2);width:50px;flex-shrink:0}
+.nutrition-bar .n-bar{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.nutrition-bar .n-fill{height:100%;border-radius:4px}
+.nutrition-bar .n-val{font-size:12px;color:var(--text-2);width:55px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+
+.feed-card{background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow)}
+.feed-card+.feed-card{margin-top:14px}
+.feed-head{display:flex;align-items:center;gap:10px;padding:14px 16px}
+.feed-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary-light),var(--success-light));display:flex;align-items:center;justify-content:center;font-size:16px}
+.feed-img{width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:72px;background:linear-gradient(135deg,var(--warning-light),var(--primary-light))}
+.feed-acts{display:flex;gap:18px;padding:12px 16px;font-size:13px;color:var(--text-2)}
+.feed-cap{padding:0 16px 14px;font-size:13px;line-height:1.6}
+
+.chart-box{width:100%;height:180px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--card);overflow:hidden}
+.chart-box svg{width:100%;height:100%}
+
+.budget-hero{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;
+  border-radius:var(--radius);padding:24px;border:none;
+}
+.budget-bar{height:8px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;margin:10px 0 6px}
+.budget-fill{height:100%;border-radius:4px;background:#fff;transition:width .5s}
+
+.cart-item{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.cart-item:last-child{border-bottom:none}
+.cart-item-img{width:60px;height:60px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px;background:var(--primary-light);flex-shrink:0}
+.cart-item-detail{flex:1;min-width:0}
+.cart-item-detail h4{font-size:14px;font-weight:600}
+.cart-item-detail p{font-size:12px;color:var(--text-3);margin-top:2px}
+.cart-price{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.qty-ctrl{display:flex;align-items:center;gap:8px;margin-top:4px}
+.qty-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;color:var(--text-1)}
+.qty-val{font-size:13px;font-weight:600;min-width:16px;text-align:center}
+
+.ocr-area{border:2px dashed var(--primary);border-radius:var(--radius);padding:48px 24px;text-align:center;background:var(--primary-light);cursor:pointer;transition:border-color .15s}
+.ocr-area:hover{border-color:var(--primary-dark)}
+
+.yt-area{border:2px dashed var(--border);border-radius:var(--radius);padding:48px 24px;text-align:center;margin-bottom:16px}
+
+.price-tag{font-variant-numeric:tabular-nums}
+
+.screen{display:none;animation:fadeIn .2s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.recipe-book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px}
+.rb-item{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,var(--primary-light),var(--warning-light));border-radius:var(--radius-sm);cursor:pointer;transition:transform .12s}
+.rb-item:hover{transform:scale(1.05)}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50}
+.overlay.active{display:block}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  :root{--sidebar-w:200px}
+}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:block}
+  .content{padding:20px 16px}
+  .grid-2{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+  .grid-4{grid-template-columns:1fr 1fr}
+  .recipe-grid{grid-template-columns:1fr 1fr}
+  .top-search{max-width:none}
+}
+@media(max-width:480px){
+  .grid-3{grid-template-columns:1fr}
+  .recipe-grid{grid-template-columns:1fr}
+  .content{padding:16px 12px}
+}
+</style>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="layout">
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">🍽️ food-budget</div>
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">메인</div>
+      <button class="nav-btn active" onclick="go('home')"><span class="icon">🏠</span>홈 대시보드</button>
+      <button class="nav-btn" onclick="go('recipes')"><span class="icon">📖</span>레시피 탐색</button>
+      <button class="nav-btn" onclick="go('fridge')"><span class="icon">🧊</span>내 냉장고<span class="badge-dot"></span></button>
+      <button class="nav-btn" onclick="go('cart')"><span class="icon">🛒</span>장바구니</button>
+
+      <div class="nav-group-label">예산 관리</div>
+      <button class="nav-btn" onclick="go('calendar')"><span class="icon">📅</span>식비 캘린더</button>
+      <button class="nav-btn" onclick="go('engel')"><span class="icon">📊</span>엥겔지수</button>
+
+      <div class="nav-group-label">가격 · 딜</div>
+      <button class="nav-btn" onclick="go('price')"><span class="icon">💰</span>시세 추천</button>
+      <button class="nav-btn" onclick="go('hotdeal')"><span class="icon">🔥</span>핫딜 (지마켓)</button>
+
+      <div class="nav-group-label">콘텐츠</div>
+      <button class="nav-btn" onclick="go('youtube')"><span class="icon">📹</span>YouTube 추출</button>
+      <button class="nav-btn" onclick="go('recipebook')"><span class="icon">📌</span>내 레시피북</button>
+      <button class="nav-btn" onclick="go('archive')"><span class="icon">📸</span>식사 아카이빙</button>
+      <button class="nav-btn" onclick="go('social')"><span class="icon">👥</span>소셜 피드</button>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+    <header class="top-bar">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <input class="top-search" placeholder="레시피, 재료, 상품 검색...">
+      <div class="top-actions">
+        <button class="notif-btn" onclick="go('notif')">🔔</button>
+        <div class="top-avatar" onclick="go('profile')">K</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- ===== HOME ===== -->
+      <div class="screen active" id="s-home">
+        <div class="content-header"><h1>대시보드</h1><span style="font-size:13px;color:var(--text-3)">2026년 7월 9일 수요일</span></div>
+
+        <div class="grid-4" style="margin-bottom:18px">
+          <div class="stat-card">
+            <div class="label">7월 남은 예산</div>
+            <div class="value" style="color:var(--success)">182,400<span style="font-size:13px;font-weight:500">원</span></div>
+            <div class="change" style="color:var(--success)">목표 300,000원의 61%</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">이번 달 지출</div>
+            <div class="value">117,600<span style="font-size:13px;font-weight:500">원</span></div>
+            <div class="change" style="color:var(--text-3)">지난달 대비 -8%</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">엥겔지수</div>
+            <div class="value" style="color:var(--primary)">35%</div>
+            <div class="change" style="color:var(--success)">양호 (30~40%)</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">냉장고 재고</div>
+            <div class="value">12<span style="font-size:13px;font-weight:500">종</span></div>
+            <div class="change" style="color:var(--danger)">⚠ 임박 2개</div>
+          </div>
+        </div>
+
+        <div class="alert alert-danger">⚠️ <b>유통기한 임박!</b> 두부 (D-1), 우유 (D-2) — <span style="cursor:pointer;text-decoration:underline" onclick="go('fridge')">냉장고 확인</span></div>
+        <div class="alert alert-success" style="cursor:pointer" onclick="go('hotdeal')">🔥 <b>최저가 알림!</b> 삼겹살 100g 1,290원 (평균 대비 30%↓) — 클릭하여 확인</div>
+
+        <div class="grid-2" style="margin-top:18px">
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>냉장고 재료 기반 추천 레시피</h3><span class="more" onclick="go('recipes')">전체보기 →</span></div>
+              <div class="recipe-grid" style="grid-template-columns:1fr 1fr">
+                <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img" style="font-size:40px">🍲</div><div class="recipe-info"><h4>김치찌개</h4><div class="meta">재료 80% 보유 · 30분 · 4,200원</div></div></div>
+                <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img" style="font-size:40px">🥚</div><div class="recipe-info"><h4>계란말이</h4><div class="meta">재료 100% 보유 · 15분 · 0원</div></div></div>
+                <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img" style="font-size:40px">🥘</div><div class="recipe-info"><h4>된장찌개</h4><div class="meta">재료 70% 보유 · 25분 · 3,500원</div></div></div>
+                <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img" style="font-size:40px">🍳</div><div class="recipe-info"><h4>감자볶음</h4><div class="meta">재료 90% 보유 · 20분 · 1,200원</div></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>오늘의 시세 추천</h3><span class="more" onclick="go('price')">전체보기 →</span></div>
+              <table>
+                <thead><tr><th>재료</th><th>쿠팡 가격</th><th>변동</th><th>상태</th></tr></thead>
+                <tbody>
+                  <tr><td>🥬 배추</td><td class="price-tag">2,890원</td><td style="color:var(--success)">↓18%</td><td><span class="badge badge-success">매수</span></td></tr>
+                  <tr><td>🧅 양파 1.5kg</td><td class="price-tag">3,290원</td><td style="color:var(--success)">↓12%</td><td><span class="badge badge-success">매수</span></td></tr>
+                  <tr><td>🥕 당근 1kg</td><td class="price-tag">2,190원</td><td style="color:var(--success)">↓9%</td><td><span class="badge badge-success">매수</span></td></tr>
+                  <tr><td>🥩 삼겹살 100g</td><td class="price-tag">1,890원</td><td style="color:var(--danger)">↑8%</td><td><span class="badge badge-warning">대기</span></td></tr>
+                  <tr><td>🍎 사과 1kg</td><td class="price-tag">6,900원</td><td style="color:var(--danger)">↑15%</td><td><span class="badge badge-danger">비쌈</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card" style="margin-top:14px">
+              <div class="card-header"><h3>오늘 식비</h3></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">🍳 아침 · 계란말이 (집밥)</span><span class="price-tag" style="font-size:13px;color:var(--success)">0원</span></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">🍱 점심 · 김밥천국 (외식)</span><span class="price-tag" style="font-size:13px">7,000원</span></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="font-size:13px">🍲 저녁 · 김치찌개 (집밥)</span><span class="price-tag" style="font-size:13px">4,200원</span></div>
+              <div style="margin-top:10px;padding-top:10px;border-top:2px solid var(--border);display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>합계</span><span class="price-tag">11,200원</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== RECIPES ===== -->
+      <div class="screen" id="s-recipes">
+        <div class="content-header"><h1>레시피 탐색</h1><button class="btn btn-primary" onclick="go('youtube')">📹 YouTube 추출</button></div>
+        <div class="tab-bar">
+          <div class="tab active">전체</div><div class="tab">한식</div><div class="tab">간편식</div><div class="tab">자취요리</div><div class="tab">다이어트</div><div class="tab">디저트</div><div class="tab">냉부 레시피</div>
+        </div>
+        <div class="recipe-grid">
+          <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img">🍲</div><div class="recipe-info"><h4>김치찌개</h4><div class="meta">⏱ 30분 · 💰 4,200원 · 만개의레시피</div></div></div>
+          <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img">🍖</div><div class="recipe-info"><h4>제육볶음</h4><div class="meta">⏱ 25분 · 💰 6,800원 · 만개의레시피</div></div></div>
+          <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img">🥘</div><div class="recipe-info"><h4>된장찌개</h4><div class="meta">⏱ 25분 · 💰 3,500원 · 냉부</div></div></div>
+          <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img">🥚</div><div class="recipe-info"><h4>계란말이</h4><div class="meta">⏱ 15분 · 💰 1,800원 · 만개의레시피</div></div></div>
+          <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img">🍳</div><div class="recipe-info"><h4>감자볶음</h4><div class="meta">⏱ 20분 · 💰 2,300원 · 만개의레시피</div></div></div>
+          <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img">🍜</div><div class="recipe-info"><h4>잔치국수</h4><div class="meta">⏱ 20분 · 💰 2,100원 · 냉부</div></div></div>
+          <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img">🥗</div><div class="recipe-info"><h4>두부샐러드</h4><div class="meta">⏱ 10분 · 💰 3,200원 · 만개의레시피</div></div></div>
+          <div class="recipe-card" onclick="go('recipe-detail')"><div class="recipe-img">🍛</div><div class="recipe-info"><h4>카레라이스</h4><div class="meta">⏱ 35분 · 💰 4,100원 · 만개의레시피</div></div></div>
+        </div>
+      </div>
+
+      <!-- ===== RECIPE DETAIL ===== -->
+      <div class="screen" id="s-recipe-detail">
+        <div class="breadcrumb"><span style="cursor:pointer" onclick="go('recipes')">레시피</span> / 김치찌개</div>
+        <div class="content-header"><h1>김치찌개</h1><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm">📌 레시피북 저장</button><button class="btn btn-primary btn-sm" onclick="go('cart')">🛒 장바구니 담기</button></div></div>
+        <div class="grid-2">
+          <div>
+            <div style="width:100%;aspect-ratio:16/10;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:96px;background:linear-gradient(135deg,var(--primary-light),var(--warning-light))">🍲</div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <span class="badge badge-primary">⏱ 30분</span><span class="badge badge-success">👤 1인분</span><span class="badge badge-warning">⭐ 4.7 (2.3k)</span><span class="badge badge-primary">만개의레시피</span>
+            </div>
+            <p style="font-size:13px;color:var(--text-2);margin-top:12px;line-height:1.7">자취생 필수 레시피! 묵은지와 돼지고기로 간단하게 만드는 얼큰한 김치찌개. 만개의레시피 인기 레시피 1위.</p>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>재료 + 쿠팡 가격</h3></div>
+              <table>
+                <thead><tr><th>재료</th><th>수량</th><th>상태</th><th style="text-align:right">가격</th></tr></thead>
+                <tbody>
+                  <tr><td>🥬 김치 (묵은지)</td><td>200g</td><td><span class="badge badge-success">보유</span></td><td style="text-align:right;color:var(--text-3);text-decoration:line-through" class="price-tag">0원</td></tr>
+                  <tr><td>🥩 돼지고기 목살</td><td>150g</td><td><span class="badge badge-warning">구매</span></td><td style="text-align:right;font-weight:700" class="price-tag">2,950원</td></tr>
+                  <tr><td>🧊 두부</td><td>1/2모</td><td><span class="badge badge-danger">D-1</span></td><td style="text-align:right;color:var(--text-3);text-decoration:line-through" class="price-tag">0원</td></tr>
+                  <tr><td>🧅 대파</td><td>1대</td><td><span class="badge badge-warning">구매</span></td><td style="text-align:right;font-weight:700" class="price-tag">1,250원</td></tr>
+                </tbody>
+              </table>
+              <div style="margin-top:14px;padding:14px;background:var(--primary-light);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center">
+                <div><div style="font-size:12px;color:var(--primary)">추가 구매 비용</div><div style="font-size:20px;font-weight:700;color:var(--primary)" class="price-tag">4,200원</div></div>
+                <button class="btn btn-primary" onclick="go('cart')">🛒 담기</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>영양성분 (1인분)</h3></div>
+              <div class="nutrition-bar"><span class="n-label">칼로리</span><div class="n-bar"><div class="n-fill" style="width:45%;background:var(--primary)"></div></div><span class="n-val">312 kcal</span></div>
+              <div class="nutrition-bar"><span class="n-label">단백질</span><div class="n-bar"><div class="n-fill" style="width:62%;background:var(--success)"></div></div><span class="n-val">24g</span></div>
+              <div class="nutrition-bar"><span class="n-label">탄수화물</span><div class="n-bar"><div class="n-fill" style="width:30%;background:var(--warning)"></div></div><span class="n-val">18g</span></div>
+              <div class="nutrition-bar"><span class="n-label">지방</span><div class="n-bar"><div class="n-fill" style="width:38%;background:#AE3EC9"></div></div><span class="n-val">16g</span></div>
+              <div class="nutrition-bar"><span class="n-label">나트륨</span><div class="n-bar"><div class="n-fill" style="width:55%;background:var(--danger)"></div></div><span class="n-val">980mg</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== FRIDGE ===== -->
+      <div class="screen" id="s-fridge">
+        <div class="content-header"><h1>내 냉장고</h1><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="go('ocr')">📷 영수증 OCR</button><button class="btn btn-primary btn-sm">+ 직접 추가</button></div></div>
+        <div class="grid-3" style="margin-bottom:18px">
+          <div class="stat-card"><div class="label">보유 재료</div><div class="value" style="color:var(--success)">12</div></div>
+          <div class="stat-card"><div class="label">유통기한 임박 (3일)</div><div class="value" style="color:var(--danger)">2</div></div>
+          <div class="stat-card"><div class="label">만료</div><div class="value" style="color:var(--text-3)">1</div></div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>⚠️ 유통기한 임박</h3></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--danger-light)">🧊</div><div class="fridge-detail"><h4>두부 (풀무원)</h4><p>1모 · 내일 만료</p></div><span class="badge badge-danger">D-1</span></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--warning-light)">🥛</div><div class="fridge-detail"><h4>우유 (서울우유 1L)</h4><p>500ml 남음 · 모레 만료</p></div><span class="badge badge-warning">D-2</span></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>냉장실</h3></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--primary-light)">🥬</div><div class="fridge-detail"><h4>김치 (묵은지)</h4><p>약 500g · 7/1 구매</p></div><span class="badge badge-success">양호</span></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--primary-light)">🥚</div><div class="fridge-detail"><h4>계란</h4><p>6개 남음 · 7/5 구매</p></div><span class="badge badge-success">D-12</span></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--primary-light)">🧅</div><div class="fridge-detail"><h4>양파</h4><p>3개 · 7/3 구매</p></div><span class="badge badge-success">양호</span></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--primary-light)">🥕</div><div class="fridge-detail"><h4>당근</h4><p>2개 · 7/3 구매</p></div><span class="badge badge-success">양호</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>냉동실</h3></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--success-light)">🥩</div><div class="fridge-detail"><h4>삼겹살 (냉동)</h4><p>300g · 6/28 구매</p></div><span class="badge badge-success">양호</span></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--success-light)">🍚</div><div class="fridge-detail"><h4>냉동밥</h4><p>3개 · 7/1 제조</p></div><span class="badge badge-success">양호</span></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>양념/소스</h3></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--warning-light)">🌶️</div><div class="fridge-detail"><h4>고추장</h4><p>남은양 70% · 6/15 구매</p></div><span class="badge badge-success">양호</span></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--warning-light)">🫘</div><div class="fridge-detail"><h4>된장</h4><p>남은양 50% · 6/10 구매</p></div><span class="badge badge-success">양호</span></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--warning-light)">🧄</div><div class="fridge-detail"><h4>다진마늘</h4><p>약 150g · 7/1 구매</p></div><span class="badge badge-success">D-20</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CART ===== -->
+      <div class="screen" id="s-cart">
+        <div class="content-header"><h1>장바구니</h1><span style="font-size:13px;color:var(--text-3)">3개 상품</span></div>
+        <div class="grid-2">
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>김치찌개 재료</h3></div>
+              <div class="cart-item"><div class="cart-item-img">🥩</div><div class="cart-item-detail"><h4>돼지고기 목살 300g</h4><p>쿠팡 로켓배송 · 내일 도착</p><div class="qty-ctrl"><button class="qty-btn">-</button><span class="qty-val">1</span><button class="qty-btn">+</button></div></div><div class="cart-price">5,900원</div></div>
+              <div class="cart-item"><div class="cart-item-img">🧅</div><div class="cart-item-detail"><h4>대파 3대</h4><p>쿠팡 · 내일 도착</p><div class="qty-ctrl"><button class="qty-btn">-</button><span class="qty-val">1</span><button class="qty-btn">+</button></div></div><div class="cart-price">1,250원</div></div>
+              <div class="cart-item"><div class="cart-item-img">🌶️</div><div class="cart-item-detail"><h4>고춧가루 100g</h4><p>쿠팡 · 내일 도착</p><div class="qty-ctrl"><button class="qty-btn">-</button><span class="qty-val">1</span><button class="qty-btn">+</button></div></div><div class="cart-price">3,200원</div></div>
+            </div>
+          </div>
+          <div>
+            <div class="budget-hero">
+              <div style="font-size:13px;opacity:.85">이번 주 예산 잔여</div>
+              <div style="font-size:28px;font-weight:700;margin:6px 0" class="price-tag">43,200원 <span style="font-size:14px;opacity:.7">/ 75,000원</span></div>
+              <div class="budget-bar"><div class="budget-fill" style="width:42%"></div></div>
+            </div>
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px"><span style="color:var(--text-2)">상품 합계</span><span class="price-tag">10,350원</span></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px"><span style="color:var(--text-2)">냉장고 재료 절약</span><span class="price-tag" style="color:var(--success)">-6,150원</span></div>
+              <div style="height:1px;background:var(--border);margin:12px 0"></div>
+              <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700"><span>결제 예상</span><span class="price-tag" style="color:var(--primary)">10,350원</span></div>
+            </div>
+            <div class="alert alert-warning" style="margin-top:14px">💡 결제 시 주간 예산 잔여 → <b>32,850원</b></div>
+            <button class="btn btn-primary" style="width:100%;padding:14px;margin-top:10px">체크리스트로 저장하기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== CALENDAR ===== -->
+      <div class="screen" id="s-calendar">
+        <div class="content-header"><h1>식비 캘린더</h1><button class="btn btn-primary btn-sm">+ 식비 기록</button></div>
+        <div class="grid-2">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-size:16px;font-weight:700">← 2026년 7월 →</span><span style="font-size:14px;color:var(--primary);font-weight:700" class="price-tag">117,600원</span></div>
+            <div class="cal-grid">
+              <div class="cal-h">일</div><div class="cal-h">월</div><div class="cal-h">화</div><div class="cal-h">수</div><div class="cal-h">목</div><div class="cal-h">금</div><div class="cal-h">토</div>
+              <div class="cal-d empty"></div><div class="cal-d empty"></div><div class="cal-d empty"></div><div class="cal-d has">1</div><div class="cal-d has">2</div><div class="cal-d has">3</div><div class="cal-d">4</div>
+              <div class="cal-d has">5</div><div class="cal-d has">6</div><div class="cal-d has">7</div><div class="cal-d has">8</div><div class="cal-d today has">9</div><div class="cal-d">10</div><div class="cal-d">11</div>
+              <div class="cal-d">12</div><div class="cal-d">13</div><div class="cal-d">14</div><div class="cal-d">15</div><div class="cal-d">16</div><div class="cal-d">17</div><div class="cal-d">18</div>
+              <div class="cal-d">19</div><div class="cal-d">20</div><div class="cal-d">21</div><div class="cal-d">22</div><div class="cal-d">23</div><div class="cal-d">24</div><div class="cal-d">25</div>
+              <div class="cal-d">26</div><div class="cal-d">27</div><div class="cal-d">28</div><div class="cal-d">29</div><div class="cal-d">30</div><div class="cal-d">31</div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>7월 9일 (오늘)</h3><span class="badge badge-primary">11,200원</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span>🍳 아침 · 계란말이 (집밥)</span><span class="price-tag" style="color:var(--success)">0원</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span>🍱 점심 · 김밥천국 (외식)</span><span class="price-tag">7,000원</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span>🍲 저녁 · 김치찌개 (집밥)</span><span class="price-tag">4,200원</span></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>주간 추이</h3></div>
+              <div class="chart-box">
+                <svg viewBox="0 0 340 160" style="padding:16px">
+                  <line x1="30" y1="130" x2="320" y2="130" stroke="var(--border)" stroke-width="1"/>
+                  <polyline points="50,90 95,65 140,80 185,55 230,70 275,60 310,75" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <text x="50" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">월</text>
+                  <text x="95" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">화</text>
+                  <text x="140" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">수</text>
+                  <text x="185" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">목</text>
+                  <text x="230" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">금</text>
+                  <text x="275" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">토</text>
+                  <text x="310" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">일</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ENGEL ===== -->
+      <div class="screen" id="s-engel">
+        <div class="content-header"><h1>엥겔지수</h1></div>
+        <div class="grid-2">
+          <div class="card" style="text-align:center">
+            <div class="engel-ring"><div class="engel-inner"><div class="val">35%</div><div class="lab">엥겔지수</div></div></div>
+            <div style="font-size:13px;color:var(--text-3)">월 소득 200만원 기준 · 식비 비중</div>
+            <div style="font-size:12px;color:var(--success);margin-top:6px;font-weight:600">양호 구간 (30~40%)</div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>월별 추이</h3></div>
+              <div class="chart-box">
+                <svg viewBox="0 0 340 160" style="padding:16px">
+                  <line x1="30" y1="130" x2="320" y2="130" stroke="var(--border)" stroke-width="1"/>
+                  <line x1="30" y1="50" x2="320" y2="50" stroke="var(--success)" stroke-width="1" stroke-dasharray="4" opacity=".5"/>
+                  <text x="322" y="54" font-size="8" fill="var(--success)">40%</text>
+                  <polyline points="60,85 110,75 160,90 210,70 260,65 300,72" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="300" cy="72" r="4" fill="var(--primary)"/>
+                  <text x="60" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">2월</text>
+                  <text x="110" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">3월</text>
+                  <text x="160" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">4월</text>
+                  <text x="210" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">5월</text>
+                  <text x="260" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">6월</text>
+                  <text x="300" y="148" font-size="9" fill="var(--text-3)" text-anchor="middle">7월</text>
+                </svg>
+              </div>
+            </div>
+            <div class="card"><div class="card-header"><h3>식비 구성</h3></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span>🏠 집밥 (재료비)</span><span class="price-tag" style="font-weight:600">68,400원 (58%)</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span>🍱 외식</span><span class="price-tag" style="font-weight:600">35,000원 (30%)</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span>☕ 카페/간식</span><span class="price-tag" style="font-weight:600">14,200원 (12%)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PRICE ===== -->
+      <div class="screen" id="s-price">
+        <div class="content-header"><h1>시세 추천</h1></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h3>🟢 지금 사면 이득</h3></div>
+            <table><thead><tr><th>재료</th><th>쿠팡 현재가</th><th>3개월 평균</th><th>변동</th></tr></thead>
+              <tbody>
+                <tr><td>🥬 배추</td><td class="price-tag">2,890원</td><td class="price-tag" style="color:var(--text-3)">3,520원</td><td style="color:var(--success);font-weight:600">↓18%</td></tr>
+                <tr><td>🧅 양파 1.5kg</td><td class="price-tag">3,290원</td><td class="price-tag" style="color:var(--text-3)">3,740원</td><td style="color:var(--success);font-weight:600">↓12%</td></tr>
+                <tr><td>🥕 당근 1kg</td><td class="price-tag">2,190원</td><td class="price-tag" style="color:var(--text-3)">2,410원</td><td style="color:var(--success);font-weight:600">↓9%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>🔴 좀 더 기다리세요</h3></div>
+            <table><thead><tr><th>재료</th><th>쿠팡 현재가</th><th>3개월 평균</th><th>변동</th></tr></thead>
+              <tbody>
+                <tr><td>🥩 삼겹살 100g</td><td class="price-tag">1,890원</td><td class="price-tag" style="color:var(--text-3)">1,750원</td><td style="color:var(--danger);font-weight:600">↑8%</td></tr>
+                <tr><td>🍎 사과 1kg</td><td class="price-tag">6,900원</td><td class="price-tag" style="color:var(--text-3)">6,000원</td><td style="color:var(--danger);font-weight:600">↑15%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-header"><h3>삼겹살 100g · 가격 이력 (쿠팡)</h3></div>
+          <div class="chart-box" style="height:200px">
+            <svg viewBox="0 0 400 180" style="padding:20px">
+              <line x1="40" y1="150" x2="380" y2="150" stroke="var(--border)" stroke-width="1"/>
+              <line x1="40" y1="80" x2="380" y2="80" stroke="var(--success)" stroke-width="1" stroke-dasharray="4" opacity=".4"/>
+              <text x="382" y="84" font-size="8" fill="var(--success)">평균 1,750원</text>
+              <polyline points="50,85 90,90 130,75 170,100 210,70 250,88 290,60 330,82 360,72" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="360" cy="72" r="5" fill="var(--primary)"/>
+              <text x="360" y="64" font-size="8" fill="var(--primary)" text-anchor="middle">1,890원</text>
+              <text x="50" y="168" font-size="8" fill="var(--text-3)">4월</text>
+              <text x="170" y="168" font-size="8" fill="var(--text-3)">5월</text>
+              <text x="290" y="168" font-size="8" fill="var(--text-3)">6월</text>
+              <text x="360" y="168" font-size="8" fill="var(--text-3)">7월</text>
+            </svg>
+          </div>
+          <div class="alert alert-success" style="margin-top:10px;margin-bottom:0">📊 과거 패턴 분석: 약 <b>2주 후</b> 할인 예상 (할인 주기 평균 18일)</div>
+        </div>
+      </div>
+
+      <!-- ===== HOTDEAL ===== -->
+      <div class="screen" id="s-hotdeal">
+        <div class="content-header"><h1>핫딜 · 지마켓 타임딜</h1><span class="badge badge-warning">20시 업데이트</span></div>
+        <div class="grid-2">
+          <div>
+            <div class="hotdeal-card"><div class="hotdeal-img">🥩</div><div class="hotdeal-info"><h4>한돈 삼겹살 구이용 600g</h4><div class="price-original">18,900원</div><div><span class="discount">-42%</span><span class="price-deal">10,900원</span></div><div style="font-size:11px;color:var(--text-3);margin-top:4px">⏰ 3시간 22분 남음 · 관련 레시피 5개</div></div></div>
+            <div class="hotdeal-card"><div class="hotdeal-img">🥚</div><div class="hotdeal-info"><h4>무항생제 계란 30구</h4><div class="price-original">9,900원</div><div><span class="discount">-30%</span><span class="price-deal">6,930원</span></div><div style="font-size:11px;color:var(--text-3);margin-top:4px">⏰ 5시간 10분 남음 · 관련 레시피 12개</div></div></div>
+            <div class="hotdeal-card"><div class="hotdeal-img">🍚</div><div class="hotdeal-info"><h4>즉석밥 햇반 210g x 12개</h4><div class="price-original">15,800원</div><div><span class="discount">-25%</span><span class="price-deal">11,850원</span></div><div style="font-size:11px;color:var(--text-3);margin-top:4px">⏰ 1시간 45분 남음</div></div></div>
+            <div class="hotdeal-card"><div class="hotdeal-img">🧅</div><div class="hotdeal-info"><h4>양파 3kg 산지직송</h4><div class="price-original">8,500원</div><div><span class="discount">-35%</span><span class="price-deal">5,525원</span></div><div style="font-size:11px;color:var(--text-3);margin-top:4px">⏰ 6시간 30분 남음 · 관련 레시피 8개</div></div></div>
+          </div>
+          <div>
+            <div class="card"><div class="card-header"><h3>내 관심 상품 알림</h3></div>
+              <div class="fridge-item"><div style="font-size:22px">🔔</div><div class="fridge-detail"><h4>삼겹살 목표가 달성!</h4><p>목표 1,500원/100g → 현재 1,290원 (지마켓)</p></div><span class="badge badge-success">달성</span></div>
+              <div class="fridge-item"><div style="font-size:22px">⏳</div><div class="fridge-detail"><h4>계란 30구</h4><p>목표 6,000원 → 현재 6,930원</p></div><span class="badge badge-warning">대기</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== YOUTUBE ===== -->
+      <div class="screen" id="s-youtube">
+        <div class="content-header"><h1>YouTube 레시피 추출</h1></div>
+        <div class="grid-2">
+          <div>
+            <div class="yt-area">
+              <div style="font-size:52px;margin-bottom:14px">📹</div>
+              <div style="font-size:15px;font-weight:600;margin-bottom:6px">YouTube URL을 붙여넣으세요</div>
+              <div style="font-size:13px;color:var(--text-3)">영상 설명란 → 자막(CC) 순서로 AI가 레시피를 추출합니다</div>
+            </div>
+            <div style="display:flex;gap:8px"><input class="top-search" placeholder="https://youtube.com/watch?v=..." style="max-width:none;flex:1"><button class="btn btn-primary">추출하기</button></div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header"><h3>추출 파이프라인</h3></div>
+              <div style="font-size:13px;color:var(--text-2);line-height:2">
+                1️⃣ YouTube Data API → 설명란 텍스트 추출<br>
+                2️⃣ 설명란에 재료 없으면 → 자막(CC) 폴백<br>
+                3️⃣ CRF NER → 재료 정규화 ("대파 반 단" → 표준 코드)<br>
+                4️⃣ ES 유사도 → 쿠팡 상품 매핑<br>
+                5️⃣ 레시피북 저장 + 가격 산출
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>최근 추출</h3></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--danger-light)">▶️</div><div class="fridge-detail"><h4>백종원의 간장계란밥</h4><p>7/7 추출 · 재료 5개 · 1,200원</p></div><span class="badge badge-primary">저장됨</span></div>
+              <div class="fridge-item"><div class="fridge-icon" style="background:var(--danger-light)">▶️</div><div class="fridge-detail"><h4>자취생 10분 파스타</h4><p>7/5 추출 · 재료 7개 · 3,800원</p></div><span class="badge badge-primary">저장됨</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== RECIPEBOOK ===== -->
+      <div class="screen" id="s-recipebook">
+        <div class="content-header"><h1>내 레시피북</h1><button class="btn btn-outline btn-sm">📤 레시피북 공유</button></div>
+        <div class="tab-bar"><div class="tab active">전체 (23)</div><div class="tab">한식 (14)</div><div class="tab">간편식 (6)</div><div class="tab">YouTube (3)</div></div>
+        <div class="recipe-book-grid">
+          <div class="rb-item" onclick="go('recipe-detail')">🍲</div><div class="rb-item" onclick="go('recipe-detail')">🍖</div><div class="rb-item" onclick="go('recipe-detail')">🥘</div>
+          <div class="rb-item" onclick="go('recipe-detail')">🥚</div><div class="rb-item" onclick="go('recipe-detail')">🍳</div><div class="rb-item" onclick="go('recipe-detail')">🍜</div>
+          <div class="rb-item" onclick="go('recipe-detail')">🥗</div><div class="rb-item" onclick="go('recipe-detail')">🍛</div><div class="rb-item" onclick="go('recipe-detail')">🍝</div>
+          <div class="rb-item" onclick="go('recipe-detail')">🥞</div><div class="rb-item" onclick="go('recipe-detail')">🍙</div><div class="rb-item" onclick="go('recipe-detail')">🌮</div>
+          <div class="rb-item" onclick="go('recipe-detail')">🥟</div><div class="rb-item" onclick="go('recipe-detail')">🍕</div><div class="rb-item" onclick="go('recipe-detail')">🌯</div>
+        </div>
+      </div>
+
+      <!-- ===== ARCHIVE ===== -->
+      <div class="screen" id="s-archive">
+        <div class="content-header"><h1>식사 아카이빙</h1><button class="btn btn-primary btn-sm">+ 식사 기록</button></div>
+        <div class="grid-3">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:13px;font-weight:600">7/9 저녁</span><span class="badge badge-primary">오늘</span></div>
+            <div style="aspect-ratio:4/3;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,var(--primary-light),var(--warning-light));margin-bottom:10px">🍲</div>
+            <div style="font-size:14px;font-weight:600">김치찌개</div>
+            <div style="font-size:12px;color:var(--text-3)">⭐⭐⭐⭐☆ · 4,200원 · 312kcal</div>
+          </div>
+          <div class="card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px">7/8 저녁</div>
+            <div style="aspect-ratio:4/3;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,var(--warning-light),var(--success-light));margin-bottom:10px">🍖</div>
+            <div style="font-size:14px;font-weight:600">제육볶음</div>
+            <div style="font-size:12px;color:var(--text-3)">⭐⭐⭐⭐⭐ · 6,800원 · 452kcal</div>
+          </div>
+          <div class="card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:10px">7/7 저녁</div>
+            <div style="aspect-ratio:4/3;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(135deg,var(--success-light),var(--primary-light));margin-bottom:10px">🍛</div>
+            <div style="font-size:14px;font-weight:600">카레라이스</div>
+            <div style="font-size:12px;color:var(--text-3)">⭐⭐⭐⭐☆ · 4,100원 · 380kcal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SOCIAL ===== -->
+      <div class="screen" id="s-social">
+        <div class="content-header"><h1>소셜 피드</h1><button class="btn btn-primary btn-sm">+ 집밥 공유</button></div>
+        <div style="max-width:560px">
+          <div class="feed-card">
+            <div class="feed-head"><div class="feed-av">🧑‍🍳</div><div><div style="font-size:14px;font-weight:600">박요리</div><div style="font-size:11px;color:var(--text-3)">2시간 전</div></div></div>
+            <div class="feed-img">🍛</div>
+            <div class="feed-acts"><span style="cursor:pointer">❤️ 24</span><span style="cursor:pointer">💬 5</span><span style="cursor:pointer">📌 저장</span></div>
+            <div class="feed-cap"><b>박요리</b> 오늘 저녁 카레! 감자+당근+양파 냉장고에 있는 재료로 해결 💰 총 3,200원</div>
+          </div>
+          <div class="feed-card">
+            <div class="feed-head"><div class="feed-av">👨‍💻</div><div><div style="font-size:14px;font-weight:600">이자취</div><div style="font-size:11px;color:var(--text-3)">5시간 전</div></div></div>
+            <div class="feed-img" style="font-size:72px">🍝</div>
+            <div class="feed-acts"><span style="cursor:pointer">❤️ 18</span><span style="cursor:pointer">💬 3</span><span style="cursor:pointer">📌 저장</span></div>
+            <div class="feed-cap"><b>이자취</b> 자취 5년차의 10분 파스타 레시피 공유합니다 🍝 재료비 2,100원!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== OCR ===== -->
+      <div class="screen" id="s-ocr">
+        <div class="breadcrumb"><span style="cursor:pointer" onclick="go('fridge')">냉장고</span> / 영수증 OCR</div>
+        <div class="content-header"><h1>영수증 OCR</h1></div>
+        <div class="grid-2">
+          <div>
+            <div class="ocr-area">
+              <div style="font-size:52px;margin-bottom:14px">📷</div>
+              <div style="font-size:15px;font-weight:600;color:var(--primary)">영수증을 촬영하거나 이미지를 업로드</div>
+              <div style="font-size:13px;color:var(--text-3);margin-top:6px">종이 영수증 · 이커머스 결제 캡쳐 지원</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>OCR 인식 예시 결과</h3><span class="badge badge-success">5개 인식</span></div>
+            <div style="font-size:12px;color:var(--text-3);margin-bottom:10px">📍 쿠팡 주문 · 2026.07.09</div>
+            <table><thead><tr><th>상품</th><th>유통기한</th><th style="text-align:right">가격</th></tr></thead>
+              <tbody>
+                <tr><td>🥩 돼지고기 목살 300g</td><td>7/15 (D-6)</td><td style="text-align:right" class="price-tag">5,900원</td></tr>
+                <tr><td>🥬 배추김치 1kg</td><td>8/09 (D-31)</td><td style="text-align:right" class="price-tag">6,900원</td></tr>
+                <tr><td>🧊 풀무원 두부 1모</td><td>7/16 (D-7)</td><td style="text-align:right" class="price-tag">1,990원</td></tr>
+                <tr><td>🥚 계란 15구</td><td>7/23 (D-14)</td><td style="text-align:right" class="price-tag">5,480원</td></tr>
+                <tr><td>🧅 양파 1.5kg</td><td>7/25 (D-16)</td><td style="text-align:right" class="price-tag">3,290원</td></tr>
+              </tbody>
+            </table>
+            <div style="margin-top:12px;padding:12px;background:var(--primary-light);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-size:12px;color:var(--primary)">합계 → 캘린더 자동 기록</div><div style="font-size:18px;font-weight:700;color:var(--primary)" class="price-tag">23,560원</div></div>
+              <button class="btn btn-primary btn-sm" onclick="go('fridge')">냉장고 등록</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== NOTIFICATIONS ===== -->
+      <div class="screen" id="s-notif">
+        <div class="content-header"><h1>알림</h1></div>
+        <div style="max-width:640px">
+          <div class="card">
+            <div class="fridge-item"><div style="font-size:22px">⚠️</div><div class="fridge-detail"><h4 style="color:var(--danger)">두부 유통기한 임박</h4><p>내일 만료 · 두부 레시피 3개 추천</p></div><span style="font-size:11px;color:var(--text-3)">1시간 전</span></div>
+            <div class="fridge-item"><div style="font-size:22px">🔥</div><div class="fridge-detail"><h4 style="color:var(--primary)">삼겹살 최저가 알림!</h4><p>쿠팡 100g 1,290원 (평균 대비 30%↓)</p></div><span style="font-size:11px;color:var(--text-3)">3시간 전</span></div>
+            <div class="fridge-item"><div style="font-size:22px">📖</div><div class="fridge-detail"><h4>박요리님이 레시피북을 공유했어요</h4><p>"자취생 일주일 식단" 레시피북 · 7개 레시피</p></div><span style="font-size:11px;color:var(--text-3)">5시간 전</span></div>
+            <div class="fridge-item"><div style="font-size:22px">💰</div><div class="fridge-detail"><h4>오늘 식비 11,200원</h4><p>이번 주 예산의 58% 사용</p></div><span style="font-size:11px;color:var(--text-3)">어제</span></div>
+            <div class="fridge-item"><div style="font-size:22px">⏰</div><div class="fridge-detail"><h4>지마켓 타임딜 업데이트</h4><p>식품 핫딜 12개 · 20시 기준</p></div><span style="font-size:11px;color:var(--text-3)">어제</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PROFILE ===== -->
+      <div class="screen" id="s-profile">
+        <div class="content-header"><h1>프로필</h1></div>
+        <div style="max-width:480px">
+          <div class="card" style="display:flex;align-items:center;gap:16px">
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--warning));display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;font-weight:700">K</div>
+            <div><div style="font-size:18px;font-weight:700">김자취</div><div style="font-size:13px;color:var(--text-3)">카카오 로그인 · 가입 3개월째</div></div>
+          </div>
+          <div class="grid-3" style="margin-top:14px">
+            <div class="stat-card" style="text-align:center"><div class="value" style="color:var(--primary)">35%</div><div class="label">엥겔지수</div></div>
+            <div class="stat-card" style="text-align:center"><div class="value">18</div><div class="label">요리 횟수</div></div>
+            <div class="stat-card" style="text-align:center"><div class="value" style="color:var(--success)">23%</div><div class="label">절약률</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => { if (b.onclick && b.onclick.toString().includes("'" + id + "'")) b.classList.add('active'); });
+  document.querySelector('.content').scrollTop = 0;
+  closeSidebar();
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', function() {
+    this.parentElement.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
