@@ -7,7 +7,7 @@
 AI 해커톤 + 인프라 캡스톤 겸용 (5인, 8-9주).
 
 ## 절대 제약
-- **AI 전부 CPU** (GTX 1060 3GB → GPU 학습 불가). CRF/XGBoost/LightGBM만.
+- **AI 전부 CPU** (GTX 1060 3GB → GPU 학습 불가). CRF/XGBoost/LightGBM만. *(예외: YouTube 영상 추출은 외부 Gemini API — AGENTS.md 절대제약 3 예외 참조)*
 - **학생 예산** — GPU 인스턴스 금지, AWS Spot+셀프호스트.
 - **데이터** — 공공 오픈데이터/공식 API + **교육용 비상업 크롤링 허용** (쿠팡 신선+가공, 만개의레시피, 냉부, 지마켓 타임딜).
   단, 비상업 목적·비공개 전제. AI 학습 목적 TDM은 별도 검토.
@@ -28,7 +28,7 @@ Kafka(Strimzi) + KEDA. kubeadm on AWS, Terraform, GitHub Actions+ECR+ArgoCD.
 - 쿠팡 크롤링 (신선+가공, 가격+메타+이미지, 일 2회)
 - 만개의레시피 크롤링 (레시피 DB, 주 1회)
 - 냉장고를부탁해 크롤링 (레시피 DB, 주 1회)
-- YouTube Data API (유저 URL → 설명란+자막 → NER, 온디맨드)
+- YouTube Data API + Gemini (유저 URL → 멀티모달 추출 → CRF NER, 온디맨드 · 유료 API 예외 승인)
 - 유저 영수증 OCR (냉장고 재고 + 캘린더 식비)
 - 지마켓 타임딜 (P1, 일 2회 11시/20시)
 - ❌ 드롭: 도매시장 경락가, KAMIS, 식약처 COOKRCP01, 기상청, 온라인가격

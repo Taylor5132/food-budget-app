@@ -67,7 +67,7 @@ food-budget-app/
 ```
 쿠팡 크롤러 ──→ Kafka ──→ ClickHouse (가격 이력) + ES (상품 인덱스)
 만개의레시피/냉부 크롤러 ──→ Kafka ──→ NER ──→ ES (레시피 인덱스)
-YouTube URL (유저) ──→ Data API ──→ NER ──→ ES + PG (레시피북)
+YouTube URL (유저) ──→ 사전필터+캐시 ──→ Gemini 추출 ──→ CRF NER ──→ ES + PG (레시피북)
 영수증 (유저) ──→ OCR ──→ PG (냉장고 재고 + 캘린더)
 지마켓 타임딜 ──→ Kafka ──→ PG + Redis (핫딜 알림)
 ```
