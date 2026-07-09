@@ -47,3 +47,17 @@ Kafka(Strimzi) + KEDA. kubeadm on AWS, Terraform, GitHub Actions+ECR+ArgoCD.
 - CNI + 서비스 메쉬 (Cilium 유력, 보류)
 - Gateway API 구현체 (Cilium Gateway / Envoy Gateway / Traefik — CNI에 연동)
 - 5인 역할분담 + 9주 타임라인
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on `Taylor5132/food-budget-app` via the `gh` CLI; external PRs are **not** a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary — `needs-triage` / `needs-info` / `ready-for-agent` / `ready-for-human` / `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context — `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
