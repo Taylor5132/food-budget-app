@@ -66,12 +66,13 @@ variable "ssh_public_key" {
 variable "vms" {
   description = "프로비저닝할 VM 스펙 (design.md §8.4 · Docker 베이스라인)"
   type = map(object({
-    vmid          = number
-    name          = string
-    cores         = number
-    memory        = number # MB, dedicated(최대)
-    balloon_floor = number # MB, floating(최소). 0 = 벌룬 off(고정)
-    disk_gb       = number
-    ip            = string
+    vmid           = number
+    name           = string
+    cores          = number
+    memory         = number # MB, dedicated(최대)
+    balloon_floor  = number # MB, floating(최소). 0 = 벌룬 off(고정)
+    disk_gb        = number # OS 디스크(GB)
+    docker_disk_gb = number # /var/lib/docker 전용 디스크(GB)
+    ip             = string
   }))
 }

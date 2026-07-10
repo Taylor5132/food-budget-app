@@ -27,8 +27,14 @@ resource "proxmox_virtual_environment_vm" "fb" {
 
   disk {
     datastore_id = var.datastore
-    interface    = "scsi0" # ⚠️ 템플릿 디스크 인터페이스와 일치해야 함 (qm config 9001 로 확인)
+    interface    = "scsi0" # OS 디스크 (템플릿 클론)
     size         = each.value.disk_gb
+  }
+
+  disk {
+    datastore_id = var.datastore
+    interface    = "scsi1" # /var/lib/docker 전용 (OS와 분리)
+    size         = each.value.docker_disk_gb
   }
 
   network_device {
