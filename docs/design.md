@@ -258,23 +258,33 @@ DAU 500(가정) 종이 추정: PG 저장 **수십만 행·수백 MB**(가격 이
 | 스토리지 | XFS 루트(**ZFS 아님 → ARC 튜닝 불필요**) · local(dir) + local-lvm(thin) |
 | 템플릿 | VM 9001 `ubuntu-2404-template` (클론 베이스) |
 
-**VM 토폴로지 (4-VM · 안정성 정렬형)**
+**VM 토폴로지 (4-VM · 안정성 정렬형) — 베이스라인 = Docker (2026-07-10)**
 
-| VM | 담는 역할 | RAM | vCPU | Disk | 설계 원칙 |
+> **현 배포 모델 = Docker(compose) 컨테이너.** 아래 스펙은 Docker 기준 산정. **K8s 이전은 향후 조건부** — 이전 시 오버헤드로 스펙 변동(하단 마이그레이션 노트).
+
+| VM | 담는 역할 (Docker 컨테이너) | RAM | vCPU | Disk | 설계 원칙 |
 |---|---|---|---|---|---|
-| VM1 · Data | PG+ES+Redis+Kafka | 9GB | 4 | 100GB | stateful 보호(무오버커밋·벌룬 off)·IO 격리(sda 후보) |
-| VM2 · App+AI | 7 FastAPI+GW+ML서빙+크롤러 | 8GB | 6 | 60GB | stateless 컴퓨트(K8s 워커) |
-| VM3 · CI/CD+Harbor | ArgoCD+러너+Harbor | 5GB | 3 | 150GB | 버스티 빌드·스캔 격리 |
-| VM4 · Monitoring | Prometheus+Grafana+Alertmanager | 3GB | 2 | 60GB | 관측 독립(사고 시 생존) |
-| **합계** | | **25GB** | 15 | ~370GB | RAM ~6GB 여유 + swap 8G / thin 643G 내(무오버프로비전) |
+| VM1 · Data | PG+ES+Redis+**Kafka** | 8GB | 4 | 100GB | stateful 보호(무오버커밋·**벌룬 off**)·IO 격리(sda 후보) |
+| VM2 · App+AI | 7 FastAPI+GW+ML서빙+크롤러/컨슈머 | 7GB | 6 | 80GB | stateless 컴퓨트(벌룬 on) |
+| VM3 · CI+Harbor | GH Actions 러너 + Harbor + 배포(compose) | 5GB | 3 | 150GB | 버스티 빌드·스캔 격리(벌룬 on) |
+| VM4 · Monitoring | **Prometheus+Loki+Tempo+Grafana+Alertmanager** (LGTM 관측 스택) | 6GB | 3 | 100GB | 관측 독립(사고 시 생존)·retention 짧게(벌룬 on) |
+| **합계** | | **26GB** | 16 | ~430GB | 벌룬(VM2~4)+무오버커밋+swap 8G → 실여유 확보(thin 643G 내) |
+
+- **관측 에이전트(전 VM):** node-exporter + **cAdvisor**(컨테이너 메트릭) + Alloy/Promtail(로그→Loki) ≈ **~0.4GB/VM** (위 스펙에 포함). cAdvisor가 Prometheus 카디널리티↑ → VM4 Prom 2GB에 반영.
+- **헤드룸:** 26GB 할당이나 VM1만 벌룬 off(DB 보호), VM2~4 벌룬 on → 미사용분 호스트 회수 + swap 8G. 실 워킹셋 ~20GB라 여유 충분.
+
+**향후 K8s 마이그레이션 (조건부 · 스펙 변동, 상황 따라 확정)**
+- **토폴로지 방향 = 하이브리드**: PG/ES/Redis는 K8s 밖 유지(안정·데이터안전), **Kafka·앱·AI·ArgoCD는 K8s 내부**(Strimzi/KEDA/HPA/ArgoCD 데모). 앱→외부 DB는 Service(selector 없음)+Endpoints로 매핑.
+- **스펙 변동 요인**: K8s 오버헤드(kubelet+CNI+오퍼레이터 ~1.5~2GB/노드) · Kafka VM1→VM2(Strimzi) · ArgoCD 신규 · VM→K8s 노드 전환 → RAM 재배분(VM1↓, VM2↑).
+- **단일노드 주의**: K8s=VM2 단일노드면 멀티노드 스케줄 데모 제한(워커 VM 추가 시 해소).
 
 **"안 터지게" 안전장치**
 - RAM **무오버커밋** (25GB ≤ 물리 31GB), VM1 벌룬 off·고정
-- JVM heap 캡: ES 1.5~2G, Kafka 1G · Prometheus retention 7~15일
+- JVM heap 캡: ES 1.5~2G, Kafka 1G · **Prometheus/Loki/Tempo retention 7~15일**(로그·트레이스도 캡)
 - CI 러너 동시 job=1·오프피크 · AI 학습 피크(11-12·17-18) 회피 · thin 풀 사용률 85% 알림
 - ⚠️ 물리 **8코어**(HT 16) → CI빌드+ML학습+크롤 동시 실행 회피(스케줄 분산)
 
-**결정 대기**: K8s 토폴로지(DB 외부 native vs 전부 K8s) · sda(250G) 활용(IO격리/백업/확장) · AWS(§6.1)↔Proxmox 관계(레지스트리 Harbor vs ECR). → §10
+**결정 대기**: sda(250G) 활용(IO격리/백업/확장) · AWS(§6.1)↔Proxmox 관계(레지스트리 Harbor vs ECR). → §10  *(베이스라인=Docker · K8s 이전=향후 조건부, 하이브리드 방향)*
 
 ---
 
@@ -300,7 +310,7 @@ DAU 500(가정) 종이 추정: PG 저장 **수십만 행·수백 MB**(가격 이
 - CNI + 서비스 메쉬 (Cilium 유력, 보류)
 - Gateway API 구현체 (Cilium Gateway / Envoy Gateway / Traefik)
 - 5인 역할분담 + 9주 타임라인
-- **온프렘 배포(§8.4)**: K8s 토폴로지(DB 외부 vs 전부 K8s) · sda(250G) 활용 · AWS(§6.1)↔Proxmox 관계(Harbor vs ECR)
+- **온프렘 배포(§8.4)**: 베이스라인=Docker · K8s 이전=향후 조건부(하이브리드 방향, 스펙 변동) · sda(250G) 활용 · AWS(§6.1)↔Proxmox 관계(Harbor vs ECR)
 - 영양소 DB 소스 (식약처 영양성분DB 검증 필요)
 - **표준 품목 마스터** — 설계 확정(§6.3), 오프라인 구축 대기. 🧪 식약처 매칭률 PoC + 마스터 오너 지정 잔여
 - **마켓컬리 폴링 강도 세부** — 핵심 SKU 셋 크기·주기(일1~2회) 실측 조정 (§3.4 방침 확정, robots 준수·회색지대 완화). 쿠팡 크롤은 블로커로 보류
