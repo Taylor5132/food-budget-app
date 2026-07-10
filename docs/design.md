@@ -34,7 +34,7 @@
 
 | # | 기능 | 설명 |
 |---|---|---|
-| 0 | **YouTube 레시피북** | 유저가 YouTube URL 제출 → 설명란 우선 + 자막 폴백 → NER → 개인 레시피북(Pinterest 스타일). 레시피북 공유 기능 포함 |
+| 0 | **YouTube 레시피북** | 유저가 YouTube URL 제출 → Gemini 멀티모달 추출(영상-only 확정) → NER → 개인 레시피북(Pinterest 스타일). 레시피북 공유 포함. *(설명란/자막 텍스트우선은 비용 PoC 대상 — video-recipe-ai §6)* |
 | 6 | **시세 기반 추천** | 마켓컬리 경량 가격 이력 기반 "지금 싼 재료" 추천. 최저가 알림은 P0(§4·§5 이상탐지) |
 | 7 | **지마켓 핫딜 추천** | 지마켓 타임딜 크롤링(일 2회, 11시/저녁) → 관련 레시피 추천. fan-out 보조 축(메인=최저가 알림) |
 | 5 | **식사 아카이빙** | 식사 사진 + 맛평가 + 가격 기록. 영양소 분석 (DB 룩업) |
@@ -243,6 +243,39 @@ NER 결과(표준 품목코드) → **Elasticsearch nori 유사도 검색** → 
 ### 8.3 정량적 데이터 (멘토 피드백 대응)
 DAU 500(가정) 종이 추정: PG 저장 **수십만 행·수백 MB**(가격 이력 ~56K + OCR 식비 ~56K + 재고·레시피), 레시피 검색·가격 조회 **~2,500 req/일**(11-12·17-18 피크 ~30% 집중), 최저가 알림 fan-out 버스트. → **단일 PG 충분**(ClickHouse 불필요 재확인). *(쿠팡 가격 이력 축 드롭 → 마켓컬리 경량 이력으로 대체)*
 
+### 8.4 온프렘 셀프호스트 토폴로지 (Proxmox) — 실측 확정 2026-07-10
+
+> 단일 베어메탈 Proxmox VE 9.1 (standalone). CLAUDE.md "AWS Spot+셀프호스트"의 **셀프호스트 티어**. 이전 K8s 클러스터 잔여물 없음(호스트 런타임·CNI·Ceph·클러스터 전부 클린, 검증 완료).
+
+**호스트 스펙 (실측)**
+
+| 자원 | 실측 |
+|---|---|
+| CPU | Intel i7-10700F — **8코어 / 16스레드** @ 2.9GHz |
+| RAM | 32GB (31GiB 가용) + swap 8GB |
+| 시스템 디스크 | sdb WD Blue 1TB SSD → VG `pve`: root 96G(**xfs**) + swap 8G + **thin `data`(local-lvm) 643G** + VFree ~183G |
+| 여유 디스크 | sda Crucial 250GB SSD — 미사용(구 Windows), **DB IO 격리 후보** |
+| 스토리지 | XFS 루트(**ZFS 아님 → ARC 튜닝 불필요**) · local(dir) + local-lvm(thin) |
+| 템플릿 | VM 9001 `ubuntu-2404-template` (클론 베이스) |
+
+**VM 토폴로지 (4-VM · 안정성 정렬형)**
+
+| VM | 담는 역할 | RAM | vCPU | Disk | 설계 원칙 |
+|---|---|---|---|---|---|
+| VM1 · Data | PG+ES+Redis+Kafka | 9GB | 4 | 100GB | stateful 보호(무오버커밋·벌룬 off)·IO 격리(sda 후보) |
+| VM2 · App+AI | 7 FastAPI+GW+ML서빙+크롤러 | 8GB | 6 | 60GB | stateless 컴퓨트(K8s 워커) |
+| VM3 · CI/CD+Harbor | ArgoCD+러너+Harbor | 5GB | 3 | 150GB | 버스티 빌드·스캔 격리 |
+| VM4 · Monitoring | Prometheus+Grafana+Alertmanager | 3GB | 2 | 60GB | 관측 독립(사고 시 생존) |
+| **합계** | | **25GB** | 15 | ~370GB | RAM ~6GB 여유 + swap 8G / thin 643G 내(무오버프로비전) |
+
+**"안 터지게" 안전장치**
+- RAM **무오버커밋** (25GB ≤ 물리 31GB), VM1 벌룬 off·고정
+- JVM heap 캡: ES 1.5~2G, Kafka 1G · Prometheus retention 7~15일
+- CI 러너 동시 job=1·오프피크 · AI 학습 피크(11-12·17-18) 회피 · thin 풀 사용률 85% 알림
+- ⚠️ 물리 **8코어**(HT 16) → CI빌드+ML학습+크롤 동시 실행 회피(스케줄 분산)
+
+**결정 대기**: K8s 토폴로지(DB 외부 native vs 전부 K8s) · sda(250G) 활용(IO격리/백업/확장) · AWS(§6.1)↔Proxmox 관계(레지스트리 Harbor vs ECR). → §10
+
 ---
 
 ## §9. 벤치마킹 참고
@@ -267,6 +300,7 @@ DAU 500(가정) 종이 추정: PG 저장 **수십만 행·수백 MB**(가격 이
 - CNI + 서비스 메쉬 (Cilium 유력, 보류)
 - Gateway API 구현체 (Cilium Gateway / Envoy Gateway / Traefik)
 - 5인 역할분담 + 9주 타임라인
+- **온프렘 배포(§8.4)**: K8s 토폴로지(DB 외부 vs 전부 K8s) · sda(250G) 활용 · AWS(§6.1)↔Proxmox 관계(Harbor vs ECR)
 - 영양소 DB 소스 (식약처 영양성분DB 검증 필요)
 - **표준 품목 마스터** — 설계 확정(§6.3), 오프라인 구축 대기. 🧪 식약처 매칭률 PoC + 마스터 오너 지정 잔여
 - **마켓컬리 폴링 강도 세부** — 핵심 SKU 셋 크기·주기(일1~2회) 실측 조정 (§3.4 방침 확정, robots 준수·회색지대 완화). 쿠팡 크롤은 블로커로 보류
