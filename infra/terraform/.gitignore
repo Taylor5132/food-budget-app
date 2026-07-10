@@ -1,0 +1,16 @@
+# 비밀 — 절대 커밋 금지
+credentials.env
+*.auto.tfvars.secret
+
+# Terraform 상태·캐시
+*.tfstate
+*.tfstate.*
+.terraform/
+crash.log
+crash.*.log
+
+# 오버라이드
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
