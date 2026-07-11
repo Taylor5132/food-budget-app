@@ -1,0 +1,6 @@
+---
+- name: Base setup — qemu-guest-agent + Docker + /var/lib/docker 전용 디스크
+  hosts: all
+  become: true
+  roles:
+    - base
