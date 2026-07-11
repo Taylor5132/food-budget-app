@@ -1,0 +1,32 @@
+---
+- name: Harbor 인스톨러 디렉토리
+  ansible.builtin.file:
+    path: /opt/harbor-installer
+    state: directory
+    mode: "0755"
+
+- name: Harbor 온라인 인스톨러 다운로드
+  ansible.builtin.get_url:
+    url: "https://github.com/goharbor/harbor/releases/download/{{ harbor_version }}/harbor-online-installer-{{ harbor_version }}.tgz"
+    dest: "/opt/harbor-installer/harbor-{{ harbor_version }}.tgz"
+    mode: "0644"
+
+- name: 인스톨러 압축 해제
+  ansible.builtin.unarchive:
+    src: "/opt/harbor-installer/harbor-{{ harbor_version }}.tgz"
+    dest: /opt/harbor-installer
+    remote_src: true
+    creates: /opt/harbor-installer/harbor/install.sh
+
+- name: harbor.yml 생성
+  ansible.builtin.template:
+    src: harbor.yml.j2
+    dest: /opt/harbor-installer/harbor/harbor.yml
+    mode: "0640"
+  register: harbor_cfg
+
+- name: Harbor 설치 (install.sh — compose 생성 + 기동, Trivy 제외)
+  ansible.builtin.command:
+    cmd: ./install.sh
+    chdir: /opt/harbor-installer/harbor
+    creates: /opt/harbor-installer/harbor/docker-compose.yml

@@ -1,0 +1,6 @@
+---
+# Harbor 레지스트리 (비-비밀 설정). 비밀번호는 secrets.yml(gitignored)
+harbor_version: v2.15.2
+harbor_hostname: 192.168.0.10
+harbor_http_port: 80
+harbor_data_volume: /data

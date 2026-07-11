@@ -16,3 +16,11 @@
   become: true
   roles:
     - monitoring
+
+- name: CI 티어 — Harbor 레지스트리 (fb-ci-harbor)
+  hosts: ci
+  become: true
+  vars_files:
+    - secrets.yml
+  roles:
+    - harbor
