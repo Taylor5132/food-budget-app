@@ -4,3 +4,15 @@
   become: true
   roles:
     - base
+
+- name: 관측 에이전트 — node-exporter + cAdvisor (전 VM)
+  hosts: all
+  become: true
+  roles:
+    - monitoring_agents
+
+- name: 모니터링 스택 — Prometheus + Grafana (fb-monitoring)
+  hosts: monitoring
+  become: true
+  roles:
+    - monitoring

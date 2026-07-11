@@ -5,3 +5,6 @@ ansible_become: true
 
 # scsi1 = /var/lib/docker 전용 디스크 (design.md §8.4)
 docker_data_disk: /dev/sdb
+
+# monitoring
+prometheus_retention: "15d"

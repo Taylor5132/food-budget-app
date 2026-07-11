@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: node
+    static_configs:
+{% for h in groups['all'] %}
+      - targets: ['{{ hostvars[h].ansible_host }}:9100']
+        labels: {instance: '{{ h }}'}
+{% endfor %}
+
+  - job_name: cadvisor
+    static_configs:
+{% for h in groups['all'] %}
+      - targets: ['{{ hostvars[h].ansible_host }}:8080']
+        labels: {instance: '{{ h }}'}
+{% endfor %}

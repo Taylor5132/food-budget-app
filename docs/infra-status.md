@@ -10,7 +10,7 @@
 | Proxmox 호스트 | ✅ 가동 (standalone, 클린) |
 | 4-VM 프로비저닝 (Terraform) | ✅ 완료, 전부 running |
 | 공통 설정 (Ansible: agent·Docker·디스크) | ✅ 완료, 4대 검증 |
-| 서비스 배포 (PG/ES/Kafka/Harbor/LGTM…) | ⬜ 미착수 (다음 단계) |
+| 서비스 배포 | 🚧 진행 중 — **monitoring 메트릭(Prometheus+Grafana) 배포·검증 완료** (타깃 9/9 up) |
 | K8s 이전 | ⬜ 향후 조건부 (하이브리드 방향) |
 
 ---
@@ -68,6 +68,10 @@ ssh ubuntu@192.168.0.11    # fb-monitoring
 
 # Proxmox 웹 UI
 https://192.168.0.12:8006  (root@pam)
+
+# 배포된 서비스 (monitoring 메트릭)
+http://192.168.0.11:3000   # Grafana (admin/admin — 첫 로그인 시 변경)
+http://192.168.0.11:9090   # Prometheus (타깃 9/9 up)
 ```
 > SSH는 cloud-init에 주입된 공개키 인증. 접근이 필요하면 본인 공개키를 `infra/terraform/terraform.tfvars`에 추가 후 재적용 or 관리자에게 요청.
 
@@ -101,7 +105,8 @@ ansible-playbook site.yml      # agent·Docker·디스크
 | 순위 | 작업 | 대상 VM | 상태 |
 |---|---|---|---|
 | — | 호스트·VM·공통설정 | 전체 | ✅ 완료 |
-| next | **monitoring 배포** (Prom+Loki+Tempo+Grafana+cAdvisor) | fb-monitoring | ⬜ |
+| ✅ | **monitoring 메트릭** (Prometheus+Grafana+node-exporter+cAdvisor, 타깃 9/9 up) | fb-monitoring +전VM | ✅ 완료 |
+| next | **monitoring 로그·트레이스** (Loki+Tempo+shipper) | fb-monitoring +전VM | ⬜ |
 | next | **data 배포** (PG·ES·Redis·Kafka compose) | fb-data | ⬜ |
 | next | **ci 배포** (Harbor·러너) | fb-ci-harbor | ⬜ |
 | later | **app 배포** (FastAPI) | fb-app-ai | ⬜ (앱 코드 대기) |

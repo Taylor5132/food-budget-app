@@ -1,0 +1,18 @@
+---
+- name: 에이전트 디렉토리
+  ansible.builtin.file:
+    path: /opt/monitoring-agents
+    state: directory
+    mode: "0755"
+
+- name: 에이전트 compose 배치
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: /opt/monitoring-agents/docker-compose.yml
+    mode: "0644"
+
+- name: node-exporter + cAdvisor 기동
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/monitoring-agents
+  changed_when: true

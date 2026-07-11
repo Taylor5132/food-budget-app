@@ -1,0 +1,33 @@
+---
+- name: 모니터링 디렉토리
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - /opt/monitoring
+    - /opt/monitoring/grafana-provisioning/datasources
+
+- name: prometheus.yml 배치 (인벤토리에서 스크레이프 타깃 생성)
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /opt/monitoring/prometheus.yml
+    mode: "0644"
+
+- name: grafana 데이터소스 프로비저닝
+  ansible.builtin.template:
+    src: grafana-datasource.yml.j2
+    dest: /opt/monitoring/grafana-provisioning/datasources/prometheus.yml
+    mode: "0644"
+
+- name: compose 배치
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: /opt/monitoring/docker-compose.yml
+    mode: "0644"
+
+- name: Prometheus + Grafana 기동
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: /opt/monitoring
+  changed_when: true
