@@ -9,6 +9,9 @@
 | 라이브 데모 | https://app.mealbong.cloud — 첫 화면의 **「체험해보기」** 로 가입 없이 둘러볼 수 있습니다 |
 | 시연 영상 | [서비스 기능 시연](https://youtu.be/15qed6VQOZs) · [부하를 건 채 무중단 Blue-Green 전환](https://youtu.be/jHFDyPO0g60) |
 | 인프라 포트폴리오 | https://bongsu.cloud — 온프렘 Kubernetes 구축과 AWS EKS 이관 상세 |
+| 최종 산출물 | [계획서 · 시방서 · 명세서 · 논문 · 화면](docs/deliverables/) · [발표 자료 · 시연 영상 원본 (Release)](https://github.com/happyInit/food-budget-app/releases/tag/final-deliverables) |
+
+<p align="center"><img src="docs/readme/award.jpg" alt="더존비즈온 Cloud DX Academy 최우수상 상장" width="360"></p>
 
 > **English summary** — A meal-planning service that turns a monthly food budget into a month of meals, matching recipe ingredients against live prices from Korean grocers (Kurly, Oasis Market). Built by a team of five as the final project of the Douzone Cloud DX Academy (First Prize). The app is 13 Python/React services; the infrastructure went from Docker Compose to a 5-node on-prem Kubernetes cluster to AWS EKS, and after the project ended it was scaled down to a single Lightsail host for the live demo (monthly cost $690 → $24).
 
@@ -127,6 +130,7 @@ flowchart LR
 | [`docs/mp_aws_migration_plan.md`](docs/mp_aws_migration_plan.md) · [`docs/mp_aws_prep_checklist.md`](docs/mp_aws_prep_checklist.md) | AWS 이관 계획과 확정 결정 |
 | [`docs/mp_k6_aws_stage1_results.md`](docs/mp_k6_aws_stage1_results.md) | 부하 시험 결과 |
 | [`docs/backup-strategy.md`](docs/backup-strategy.md) | 백업 전략 |
+| [`docs/deliverables/`](docs/deliverables/) | 최종 산출물 — 계획서 · 통합 시방서 · API · 데이터 명세서 · 논문 |
 
 ## 실행
 
